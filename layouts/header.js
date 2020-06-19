@@ -58,11 +58,7 @@ const Header = ({ user, firebase, onLogout }) => {
     if (isFunction(onLogout)) {
       await onLogout();
     }
-    // Stop recording after logout
-    if (typeof window !== 'undefined' && window.FS) {
-      window.FS.shutdown();
-    }
-    Router.push('/login');
+    window.location = '/login';
   };
 
   return (
