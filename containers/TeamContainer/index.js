@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import { useState, useEffect, useContext } from 'react';
+import { memo, useState, useEffect, useContext } from 'react';
 import { first, isEmpty } from 'lodash';
 import { CircularProgress } from '@material-ui/core';
 import { useSnackbar } from 'notistack';
@@ -8,7 +8,7 @@ import { withFirebase } from '../../hoc/withFirebase';
 import { withUser } from '../../hoc/withUser';
 import { AuthContext } from '../../contexts/auth';
 
-const TeamContainer = ({ firebase, user }) => {
+const TeamContainer = memo(({ firebase, user }) => {
   const { updateUser } = useContext(AuthContext);
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(false);
@@ -161,6 +161,6 @@ const TeamContainer = ({ firebase, user }) => {
   }
 
   return <UserTeam loading={loading} team={team} />;
-};
+});
 
 export default withFirebase(withUser(TeamContainer));
