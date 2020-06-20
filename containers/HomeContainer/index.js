@@ -1,14 +1,18 @@
 /* eslint-disable react/prop-types */
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Container from '@material-ui/core/Container';
 import AppBar from '@material-ui/core/AppBar';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import PersonIcon from '@material-ui/icons/Person';
 import PeopleIcon from '@material-ui/icons/People';
+import { first, isEmpty } from 'lodash';
+import CircularProgress from '@material-ui/core/CircularProgress';
 import TabPanel from './tabpanel';
 import TodoContainer from '../TodoContainer';
 import TeamContainer from '../TeamContainer';
+import { withFirebase } from '../../hoc/withFirebase';
+import { withUser } from '../../hoc/withUser';
 
 function a11yProps(index) {
   return {
@@ -17,11 +21,115 @@ function a11yProps(index) {
   };
 }
 
-const HomeContainer = () => {
+const HomeContainer = ({ firebase, user }) => {
   const [value, setValue] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [team, setTeam] = useState(null);
+  const [userTodos, setUserTodos] = useState([]);
+
   const handleChange = (event, newValue) => {
     setValue(newValue);
   };
+
+  const completeTeamMembersData = async (teamObj) => {
+    const memberPromises = [];
+    const { members } = teamObj;
+    members.forEach((member) => {
+      memberPromises.push(member.get());
+    });
+    const memebersData = await Promise.all(memberPromises);
+    if (memebersData && memebersData.length > 0) {
+      memebersData.forEach((member, index) => {
+        members[index] = member.data();
+      });
+    }
+    return members;
+  };
+
+  async function fetchData() {
+    setLoading(true);
+    const teams = await firebase.getCollectionData({
+      collection: 'teams',
+      where: { field: 'author', op: '==', value: user.uid },
+    });
+    const ownedTeam = first(teams);
+    if (!isEmpty(ownedTeam)) {
+      if (ownedTeam.members.length > 0) {
+        const teamMembers = await completeTeamMembersData(ownedTeam);
+        ownedTeam.membersData = teamMembers;
+      }
+      setTeam(ownedTeam);
+    }
+    setLoading(false);
+  }
+
+  async function fetchJoinedData() {
+    setLoading(true);
+    const joinedTeam = await firebase.getDocumentData({
+      collection: 'teams',
+      documentId: user.team,
+    });
+    if (!isEmpty(joinedTeam)) {
+      if (joinedTeam.members.length > 0) {
+        const teamMembers = await completeTeamMembersData(joinedTeam);
+        joinedTeam.membersData = teamMembers;
+      }
+      setTeam(joinedTeam);
+    }
+    setLoading(false);
+  }
+
+  useEffect(() => {
+    if (isEmpty(user.team)) {
+      fetchData();
+    } else if (!isEmpty(user.team)) {
+      fetchJoinedData();
+    }
+  }, []);
+
+  useEffect(() => {
+    async function fetchTodosData() {
+      setLoading(true);
+      let todos = await firebase.getCollectionData({
+        collection: 'todos',
+        where: { field: 'author', op: '==', value: user.uid },
+      });
+      todos = todos.map((todo) => {
+        return { ...todo, editable: false };
+      });
+      console.log({ todos });
+      setUserTodos(todos);
+      setLoading(false);
+    }
+    fetchTodosData();
+  }, []);
+
+  const handleAddTodo = (addTodo, text) => {
+    setUserTodos((oldTodos) => [
+      ...oldTodos,
+      { id: addTodo.id, text, completed: false, editable: false },
+    ]);
+  };
+
+  if (loading)
+    return (
+      <div className="loading-container">
+        <h2>Loading Application...</h2>
+        <CircularProgress size={68} />
+        <style jsx>
+          {`
+            .loading-container {
+              width: 100%;
+              height: 80%;
+              display: flex;
+              flex-direction: column;
+              justify-content: center;
+              align-items: center;
+            }
+          `}
+        </style>
+      </div>
+    );
 
   return (
     <Container maxWidth="md">
@@ -39,13 +147,25 @@ const HomeContainer = () => {
         </Tabs>
       </AppBar>
       <TabPanel value={value} index={0}>
-        <TodoContainer />
+        <TodoContainer
+          items={userTodos}
+          firebase={firebase}
+          team={team}
+          user={user}
+          onSetTodo={(items) => setUserTodos(items)}
+          onAddTodo={handleAddTodo}
+        />
       </TabPanel>
       <TabPanel value={value} index={1}>
-        <TeamContainer />
+        <TeamContainer
+          firebase={firebase}
+          team={team}
+          user={user}
+          onSetTeam={(payloadTeam) => setTeam(payloadTeam)}
+        />
       </TabPanel>
     </Container>
   );
 };
 
-export default HomeContainer;
+export default withUser(withFirebase(HomeContainer));

@@ -1,31 +1,11 @@
 /* eslint-disable react/prop-types */
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { map } from 'lodash';
+import PropTypes from 'prop-types';
 import UserTasks from '../../components/UserTasks';
-import { withFirebase } from '../../hoc/withFirebase';
-import { withUser } from '../../hoc/withUser';
 
-const TodoContainer = ({ firebase, user }) => {
-  const [loading, setLoading] = useState(false);
+const TodoContainer = ({ items, onSetTodo, onAddTodo, firebase, team, user }) => {
   const [addLoading, setAddLoading] = useState(false);
-  const [userTodos, setUserTodos] = useState([]);
-
-  useEffect(() => {
-    async function fetchData() {
-      setLoading(true);
-      let todos = await firebase.getCollectionData({
-        collection: 'todos',
-        where: { field: 'author', op: '==', value: user.uid },
-      });
-      todos = todos.map((todo) => {
-        return { ...todo, editable: false };
-      });
-      console.log({ todos });
-      setUserTodos(todos);
-      setLoading(false);
-    }
-    fetchData();
-  }, []);
 
   const handleAddTodo = async (text) => {
     setAddLoading(true);
@@ -34,18 +14,13 @@ const TodoContainer = ({ firebase, user }) => {
       completed: false,
       text,
     };
-
     const todoAdded = await firebase.saveData({ collection: 'todos', data: todoToServer });
-
-    setUserTodos((oldTodos) => [
-      ...oldTodos,
-      { id: todoAdded.id, text, completed: false, editable: false },
-    ]);
+    onAddTodo(todoAdded, text);
     setAddLoading(false);
   };
 
   const handleRemoveTodo = async (id) => {
-    setUserTodos(userTodos.filter((todo) => todo.id !== id));
+    onSetTodo(items.filter((todo) => todo.id !== id));
     await firebase.deleteDocument({ collection: 'todos', id });
   };
 
@@ -59,7 +34,7 @@ const TodoContainer = ({ firebase, user }) => {
   };
 
   const handleToggle = (id, field, val, save = false) => () => {
-    const tmpTodos = map(userTodos, (todo) => {
+    const tmpTodos = map(items, (todo) => {
       const tmpTodo = todo;
       if (tmpTodo.id === id) {
         tmpTodo[field] = val;
@@ -69,24 +44,24 @@ const TodoContainer = ({ firebase, user }) => {
       }
       return tmpTodo;
     });
-    setUserTodos(tmpTodos);
+    onSetTodo(tmpTodos);
   };
 
   const handleEditTodo = (id, text) => {
-    const tmpTodos = map(userTodos, (todo) => {
+    const tmpTodos = map(items, (todo) => {
       const tmpTodo = todo;
       if (tmpTodo.id === id) {
         tmpTodo.text = text;
       }
       return tmpTodo;
     });
-    setUserTodos(tmpTodos);
+    onSetTodo(tmpTodos);
   };
 
   return (
     <UserTasks
-      loading={loading}
-      items={userTodos}
+      team={team}
+      items={items}
       onAdd={handleAddTodo}
       onEdit={handleEditTodo}
       onRemove={handleRemoveTodo}
@@ -97,4 +72,11 @@ const TodoContainer = ({ firebase, user }) => {
   );
 };
 
-export default withFirebase(withUser(TodoContainer));
+TodoContainer.propTypes = {
+  items: PropTypes.array,
+  firebase: PropTypes.any,
+  onSetTodo: PropTypes.func,
+  team: PropTypes.any,
+  user: PropTypes.object,
+};
+export default TodoContainer;

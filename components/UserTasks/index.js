@@ -1,4 +1,5 @@
 /* eslint-disable react/jsx-wrap-multilines */
+import { useState } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
@@ -15,9 +16,9 @@ import Card from '@material-ui/core/Card';
 import InputAdornment from '@material-ui/core/InputAdornment';
 import Tooltip from '@material-ui/core/Tooltip';
 import { filter } from 'lodash';
-import Skeleton from '@material-ui/lab/Skeleton';
 import PropTypes from 'prop-types';
 import { useInputValue } from '../../hooks/useInputValue';
+import AssignDialog from './assign-dialog';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -82,10 +83,19 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const UserTasks = ({ loading, addLoading, items, onAdd, onRemove, onToggle, onEdit, onUpdate }) => {
+const UserTasks = ({
+  team = [],
+  addLoading,
+  items,
+  onAdd,
+  onRemove,
+  onToggle,
+  onEdit,
+  onUpdate,
+}) => {
   const classes = useStyles();
   const newTodo = useInputValue('');
-
+  const [openAssignDialog, setOpenAssignDialog] = useState(false);
   const renderCompletedTodos = () => {
     const completedTodos = filter(items, 'completed');
     return (
@@ -96,18 +106,13 @@ const UserTasks = ({ loading, addLoading, items, onAdd, onRemove, onToggle, onEd
     );
   };
 
-  if (loading) {
-    return (
-      <>
-        <Skeleton className={classes.skeleton} />
-        <Skeleton className={classes.skeleton} />
-        <Skeleton className={classes.skeleton} />
-      </>
-    );
-  }
-
   return (
     <Card className={classes.root}>
+      <AssignDialog
+        selectedValue={(selectedValue) => console.log({ selectedValue })}
+        open={openAssignDialog}
+        onClose={() => setOpenAssignDialog(false)}
+      />
       <List component="nav" aria-label="main add-todo field">
         <Input
           {...newTodo}
@@ -185,15 +190,17 @@ const UserTasks = ({ loading, addLoading, items, onAdd, onRemove, onToggle, onEd
                     <DeleteIcon color="error" />
                   </IconButton>
                 </Tooltip>
-                <Tooltip title="Assign To">
-                  <IconButton
-                    edge="end"
-                    onClick={() => onRemove(todo.id)}
-                    aria-label="assign tasks"
-                  >
-                    <AssignmentInd color="primary" />
-                  </IconButton>
-                </Tooltip>
+                {team && team.members.length > 1 && (
+                  <Tooltip title="Assign To">
+                    <IconButton
+                      edge="end"
+                      onClick={() => setOpenAssignDialog(true)}
+                      aria-label="assign tasks"
+                    >
+                      <AssignmentInd color="primary" />
+                    </IconButton>
+                  </Tooltip>
+                )}
               </ListItemSecondaryAction>
             </ListItem>
           );
@@ -213,6 +220,7 @@ const UserTasks = ({ loading, addLoading, items, onAdd, onRemove, onToggle, onEd
 };
 
 UserTasks.propTypes = {
+  team: PropTypes.array,
   loading: PropTypes.bool,
   addLoading: PropTypes.bool,
   items: PropTypes.array,

@@ -1,29 +1,17 @@
 /* eslint-disable react/prop-types */
-import { memo, useState, useEffect, useContext } from 'react';
+import { memo, useState, useContext } from 'react';
 import { first, isEmpty } from 'lodash';
-import { makeStyles } from '@material-ui/core/styles';
 import { useSnackbar } from 'notistack';
-import Skeleton from '@material-ui/lab/Skeleton';
+import PropTypes from 'prop-types';
 import { EmptyTeam, UserTeam } from '../../components/UserTeam';
-import { withFirebase } from '../../hoc/withFirebase';
-import { withUser } from '../../hoc/withUser';
 import { AuthContext } from '../../contexts/auth';
 
-const useStyles = makeStyles(() => ({
-  skeleton: {
-    height: '40px',
-    marginTop: 10,
-    marginBottom: 10,
-  },
-}));
-
-const TeamContainer = memo(({ firebase, user }) => {
+const TeamContainer = memo(({ firebase, team, user, onSetTeam }) => {
   const { updateUser } = useContext(AuthContext);
-  const [loading, setLoading] = useState(false);
+  // const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(false);
-  const [team, setTeam] = useState(null);
+  // const [team, setTeam] = useState(null);
   const { enqueueSnackbar } = useSnackbar();
-  const classes = useStyles();
 
   const completeTeamMembersData = async (teamObj) => {
     const memberPromises = [];
@@ -40,46 +28,46 @@ const TeamContainer = memo(({ firebase, user }) => {
     return members;
   };
 
-  async function fetchData() {
-    setLoading(true);
-    const teams = await firebase.getCollectionData({
-      collection: 'teams',
-      where: { field: 'author', op: '==', value: user.uid },
-    });
-    const ownedTeam = first(teams);
-    if (!isEmpty(ownedTeam)) {
-      if (ownedTeam.members.length > 0) {
-        const teamMembers = await completeTeamMembersData(ownedTeam);
-        ownedTeam.membersData = teamMembers;
-      }
-      setTeam(ownedTeam);
-    }
-    setLoading(false);
-  }
+  // async function fetchData() {
+  //   setLoading(true);
+  //   const teams = await firebase.getCollectionData({
+  //     collection: 'teams',
+  //     where: { field: 'author', op: '==', value: user.uid },
+  //   });
+  //   const ownedTeam = first(teams);
+  //   if (!isEmpty(ownedTeam)) {
+  //     if (ownedTeam.members.length > 0) {
+  //       const teamMembers = await completeTeamMembersData(ownedTeam);
+  //       ownedTeam.membersData = teamMembers;
+  //     }
+  //     setTeam(ownedTeam);
+  //   }
+  //   setLoading(false);
+  // }
 
-  async function fetchJoinedData() {
-    setLoading(true);
-    const joinedTeam = await firebase.getDocumentData({
-      collection: 'teams',
-      documentId: user.team,
-    });
-    if (!isEmpty(joinedTeam)) {
-      if (joinedTeam.members.length > 0) {
-        const teamMembers = await completeTeamMembersData(joinedTeam);
-        joinedTeam.membersData = teamMembers;
-      }
-      setTeam(joinedTeam);
-    }
-    setLoading(false);
-  }
+  // async function fetchJoinedData() {
+  //   setLoading(true);
+  //   const joinedTeam = await firebase.getDocumentData({
+  //     collection: 'teams',
+  //     documentId: user.team,
+  //   });
+  //   if (!isEmpty(joinedTeam)) {
+  //     if (joinedTeam.members.length > 0) {
+  //       const teamMembers = await completeTeamMembersData(joinedTeam);
+  //       joinedTeam.membersData = teamMembers;
+  //     }
+  //     setTeam(joinedTeam);
+  //   }
+  //   setLoading(false);
+  // }
 
-  useEffect(() => {
-    if (isEmpty(user.team)) {
-      fetchData();
-    } else if (!isEmpty(user.team)) {
-      fetchJoinedData();
-    }
-  }, []);
+  // useEffect(() => {
+  //   if (isEmpty(user.team)) {
+  //     fetchData();
+  //   } else if (!isEmpty(user.team)) {
+  //     fetchJoinedData();
+  //   }
+  // }, []);
 
   const handleCreateTeam = async (teamName) => {
     setProgress(true);
@@ -108,7 +96,7 @@ const TeamContainer = memo(({ firebase, user }) => {
       await completeTeamMembersData(todoAdded);
     }
     updateUser(user);
-    setTeam(todoAdded);
+    onSetTeam(todoAdded);
     setProgress(false);
   };
 
@@ -138,7 +126,7 @@ const TeamContainer = memo(({ firebase, user }) => {
         await completeTeamMembersData(foundTeam);
       }
       updateUser(user);
-      setTeam(foundTeam);
+      onSetTeam(foundTeam);
     } else {
       enqueueSnackbar('Team not found, review the team code', { variant: 'error' });
     }
@@ -146,22 +134,19 @@ const TeamContainer = memo(({ firebase, user }) => {
     setProgress(false);
   };
 
-  if (loading)
-    return (
-      <>
-        <Skeleton className={classes.skeleton} />
-        <Skeleton className={classes.skeleton} />
-        <Skeleton className={classes.skeleton} />
-      </>
-    );
-
   if (isEmpty(team)) {
     return (
       <EmptyTeam onCreateTeam={handleCreateTeam} onJoinTeam={handleJoinTeam} loading={progress} />
     );
   }
 
-  return <UserTeam loading={loading} team={team} />;
+  return <UserTeam team={team} />;
 });
 
-export default withFirebase(withUser(TeamContainer));
+TeamContainer.propTypes = {
+  firebase: PropTypes.any,
+  team: PropTypes.any,
+  user: PropTypes.object,
+  onSetTeam: PropTypes.func,
+};
+export default TeamContainer;
