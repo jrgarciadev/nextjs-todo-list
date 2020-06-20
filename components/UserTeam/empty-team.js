@@ -3,6 +3,7 @@ import { makeStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import PropTypes from 'prop-types';
 import CreateTeamDialog from './create-dialog';
+import JoinTeamDialog from './join-dialog';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -26,6 +27,7 @@ const useStyles = makeStyles((theme) => ({
   addTeamButton: {
     width: '40%',
     padding: '15px 20px',
+    marginBottom: theme.spacing(2),
   },
   infoTitle: {
     padding: 0,
@@ -39,12 +41,22 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const EmptyTeam = ({ loading, onCreateTeam }) => {
+const EmptyTeam = ({ loading, onCreateTeam, onJoinTeam }) => {
   const [createTeamDialogActive, setCreateTeamDialogActive] = useState(false);
+  const [joinTeamDialogActive, setJoinTeamDialogActive] = useState(false);
 
   const handleCloseTeamDialog = () => setCreateTeamDialogActive(false);
+  const handleCloseJoinTeamDialog = () => setJoinTeamDialogActive(false);
 
-  //   const handleCreateTeam = (teamName) => console.log({ teamName });
+  const handleCreateTeamLocal = async (teamName) => {
+    await onCreateTeam(teamName);
+    setCreateTeamDialogActive(false);
+  };
+
+  const handleJoinTeamLocal = async (teamCode) => {
+    await onJoinTeam(parseInt(teamCode, 10));
+    setJoinTeamDialogActive(false);
+  };
 
   const classes = useStyles();
 
@@ -52,15 +64,19 @@ const EmptyTeam = ({ loading, onCreateTeam }) => {
     <div className={classes.emptyContainer}>
       <CreateTeamDialog
         loading={loading}
-        onCreate={onCreateTeam}
+        onCreate={handleCreateTeamLocal}
         open={createTeamDialogActive}
         onClose={handleCloseTeamDialog}
       />
+      <JoinTeamDialog
+        loading={loading}
+        onCreate={handleJoinTeamLocal}
+        open={joinTeamDialogActive}
+        onClose={handleCloseJoinTeamDialog}
+      />
       <img width="50%" src="/empty_teams.svg" alt="don't have a team" />
       <h1 className={classes.infoTitle}>You don&apos;t have a team</h1>
-      <p className={classes.info}>
-        You can create a team and then share the code with your team members
-      </p>
+      <p className={classes.info}>You can create a team or you can join one with the code;</p>
       <Button
         onClick={() => setCreateTeamDialogActive(true)}
         className={classes.addTeamButton}
@@ -69,6 +85,14 @@ const EmptyTeam = ({ loading, onCreateTeam }) => {
       >
         <span>Create Team</span>
       </Button>
+      <Button
+        onClick={() => setJoinTeamDialogActive(true)}
+        className={classes.addTeamButton}
+        variant="outlined"
+        color="primary"
+      >
+        <span>Join Team</span>
+      </Button>
     </div>
   );
 };
@@ -76,6 +100,7 @@ const EmptyTeam = ({ loading, onCreateTeam }) => {
 EmptyTeam.propTypes = {
   loading: PropTypes.bool,
   onCreateTeam: PropTypes.func,
+  onJoinTeam: PropTypes.func,
 };
 
 export default EmptyTeam;

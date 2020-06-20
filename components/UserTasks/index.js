@@ -110,7 +110,7 @@ const UserTasks = ({ loading, addLoading, items, onAdd, onRemove, onToggle, onEd
         <Input
           {...newTodo}
           className={classes.inputTodo}
-          placeholder="Type here to add new todo item.."
+          placeholder="Type here to add new task item.."
           inputProps={{ 'aria-label': 'description' }}
           endAdornment={
             <InputAdornment position="end">
@@ -140,7 +140,9 @@ const UserTasks = ({ loading, addLoading, items, onAdd, onRemove, onToggle, onEd
         <div className={classes.emptyContainer}>
           <img width="50%" src="/empty_todos.svg" alt="don't have todos" />
           <h1 className={classes.infoTitle}>You don&apos;t have tasks</h1>
-          <p className={classes.info}>You can add any tasks writing on top input</p>
+          <p className={classes.info}>
+            Here you will be able to see the tasks you create and the ones assigned to you
+          </p>
         </div>
       )}
 

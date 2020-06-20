@@ -1,9 +1,10 @@
 /* eslint-disable react/prop-types */
 import { useEffect } from 'react';
-import { ThemeProvider } from '@material-ui/core/styles';
+import { ThemeProvider, withStyles } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import { debounce } from 'lodash';
 import NProgress from 'nprogress';
+import { SnackbarProvider } from 'notistack';
 import materialUITheme from '../styles/materialui/theme';
 import globalTheme from '../styles/global';
 import { FirebaseContext } from '../contexts/firebase';
@@ -26,7 +27,25 @@ RouterEvents.on('routeChangeError', () => {
   NProgress.done();
 });
 
-function App({ Component, pageProps }) {
+const styles = {
+  snack: {
+    padding: '10px',
+  },
+  success: {
+    backgroundColor: 'var(--geist-success)',
+  },
+  error: {
+    backgroundColor: 'var(--geist-error)',
+  },
+  info: {
+    backgroundColor: 'var(--geist-primary)',
+  },
+  warning: {
+    backgroundColor: 'var(--geist-warning)',
+  },
+};
+
+function App({ Component, classes, pageProps }) {
   const firebase = new Firebase();
 
   useEffect(() => {
@@ -49,9 +68,26 @@ function App({ Component, pageProps }) {
     <>
       <AuthContext.Provider>
         <FirebaseContext.Provider value={firebase}>
-          <ThemeProvider theme={materialUITheme}>
-            <Component {...pageProps} />
-          </ThemeProvider>
+          <SnackbarProvider
+            preventDuplicate
+            elevation={0}
+            classes={{
+              root: classes.snack,
+              variantSuccess: classes.success,
+              variantError: classes.error,
+              variantWarning: classes.warning,
+              variantInfo: classes.info,
+            }}
+            anchorOrigin={{
+              vertical: 'bottom',
+              horizontal: 'right',
+            }}
+            maxSnack={3}
+          >
+            <ThemeProvider theme={materialUITheme}>
+              <Component {...pageProps} />
+            </ThemeProvider>
+          </SnackbarProvider>
           <style jsx global>
             {nprogressStyles}
           </style>
@@ -65,4 +101,4 @@ function App({ Component, pageProps }) {
   );
 }
 
-export default App;
+export default withStyles(styles)(App);
