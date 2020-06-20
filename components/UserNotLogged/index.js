@@ -34,7 +34,7 @@ function UserNotLogged() {
           onClick={() => Router.push('/login')}
           className={classes.loginButton}
           variant="contained"
-          color="secondary"
+          color="primary"
         >
           <span>Login</span>
         </Button>

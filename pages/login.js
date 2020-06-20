@@ -63,7 +63,7 @@ const SignIn = ({ onGithubSignIn, onGoogleSignIn, loading }) => {
       {loading ? <h1>logging in..</h1> : <h1>Login to create tasks</h1>}
       {loading ? (
         <div className={classes.loaderContainer}>
-          <CircularProgress color="secondary" />
+          <CircularProgress color="primary" />
         </div>
       ) : (
         <>

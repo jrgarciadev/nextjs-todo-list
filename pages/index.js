@@ -1,13 +1,13 @@
 import PropTypes from 'prop-types';
 import MainLayout from '../layouts/main';
-import TodoContainer from '../components/TodoContainer';
 import { withUser } from '../hoc/withUser';
 import UserNotLogged from '../components/UserNotLogged';
+import HomeContainer from '../containers/HomeContainer';
 
 const Home = ({ user }) => {
   return (
     <MainLayout>
-      <div className="container-wrapper">{!user ? <UserNotLogged /> : <TodoContainer />}</div>
+      <div className="container-wrapper">{!user ? <UserNotLogged /> : <HomeContainer />}</div>
       <style jsx>
         {`
           .container-wrapper {
