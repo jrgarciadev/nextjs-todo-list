@@ -8,9 +8,7 @@ import { AuthContext } from '../../contexts/auth';
 
 const TeamContainer = memo(({ firebase, team, user, onSetTeam }) => {
   const { updateUser } = useContext(AuthContext);
-  // const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(false);
-  // const [team, setTeam] = useState(null);
   const { enqueueSnackbar } = useSnackbar();
 
   const completeTeamMembersData = async (teamObj) => {
@@ -27,47 +25,6 @@ const TeamContainer = memo(({ firebase, team, user, onSetTeam }) => {
     }
     return members;
   };
-
-  // async function fetchData() {
-  //   setLoading(true);
-  //   const teams = await firebase.getCollectionData({
-  //     collection: 'teams',
-  //     where: { field: 'author', op: '==', value: user.uid },
-  //   });
-  //   const ownedTeam = first(teams);
-  //   if (!isEmpty(ownedTeam)) {
-  //     if (ownedTeam.members.length > 0) {
-  //       const teamMembers = await completeTeamMembersData(ownedTeam);
-  //       ownedTeam.membersData = teamMembers;
-  //     }
-  //     setTeam(ownedTeam);
-  //   }
-  //   setLoading(false);
-  // }
-
-  // async function fetchJoinedData() {
-  //   setLoading(true);
-  //   const joinedTeam = await firebase.getDocumentData({
-  //     collection: 'teams',
-  //     documentId: user.team,
-  //   });
-  //   if (!isEmpty(joinedTeam)) {
-  //     if (joinedTeam.members.length > 0) {
-  //       const teamMembers = await completeTeamMembersData(joinedTeam);
-  //       joinedTeam.membersData = teamMembers;
-  //     }
-  //     setTeam(joinedTeam);
-  //   }
-  //   setLoading(false);
-  // }
-
-  // useEffect(() => {
-  //   if (isEmpty(user.team)) {
-  //     fetchData();
-  //   } else if (!isEmpty(user.team)) {
-  //     fetchJoinedData();
-  //   }
-  // }, []);
 
   const handleCreateTeam = async (teamName) => {
     setProgress(true);

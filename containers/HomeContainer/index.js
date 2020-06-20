@@ -79,6 +79,14 @@ const HomeContainer = ({ firebase, user }) => {
     setLoading(false);
   }
 
+  const handleAddTodo = (addTodo, text) => {
+    setUserTodos((oldTodos) => [
+      ...oldTodos,
+      { id: addTodo.id, text, completed: false, editable: false },
+    ]);
+  };
+
+  // To fetch team data
   useEffect(() => {
     if (isEmpty(user.team)) {
       fetchData();
@@ -87,6 +95,7 @@ const HomeContainer = ({ firebase, user }) => {
     }
   }, []);
 
+  // To fetch TODOS data
   useEffect(() => {
     async function fetchTodosData() {
       setLoading(true);
@@ -104,12 +113,30 @@ const HomeContainer = ({ firebase, user }) => {
     fetchTodosData();
   }, []);
 
-  const handleAddTodo = (addTodo, text) => {
-    setUserTodos((oldTodos) => [
-      ...oldTodos,
-      { id: addTodo.id, text, completed: false, editable: false },
-    ]);
-  };
+  // To fetch realtime task assigned
+  useEffect(() => {
+    const unsubscribe = firebase.db.collection('todos').onSnapshot((snapshot) => {
+      if (!snapshot.empty) {
+        const myDataArray = [];
+        snapshot.forEach((doc) => {
+          const rtTodo = doc.data();
+          // If has been assigned to auth user
+          if (rtTodo.assigning && rtTodo.author === user.uid) {
+            myDataArray.push({ ...rtTodo });
+            const rtTodoRef = firebase.getRef({ collection: 'todos', doc: doc.id });
+            // Update flag
+            rtTodoRef.update({ assigning: false });
+            // Update current state
+            handleAddTodo(rtTodo, rtTodo.text);
+          }
+        });
+        console.log({ myDataArray });
+      }
+    });
+    return () => {
+      unsubscribe();
+    };
+  }, [firebase]);
 
   if (loading)
     return (

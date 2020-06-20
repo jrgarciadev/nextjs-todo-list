@@ -85,10 +85,12 @@ const useStyles = makeStyles((theme) => ({
 
 const UserTasks = ({
   team = [],
+  user,
   addLoading,
   items,
   onAdd,
   onRemove,
+  onAssign,
   onToggle,
   onEdit,
   onUpdate,
@@ -106,13 +108,13 @@ const UserTasks = ({
     );
   };
 
+  const handleAssignTask = (taskId, userId) => {
+    onAssign(taskId, userId);
+    setOpenAssignDialog(false);
+  };
+
   return (
     <Card className={classes.root}>
-      <AssignDialog
-        selectedValue={(selectedValue) => console.log({ selectedValue })}
-        open={openAssignDialog}
-        onClose={() => setOpenAssignDialog(false)}
-      />
       <List component="nav" aria-label="main add-todo field">
         <Input
           {...newTodo}
@@ -159,6 +161,16 @@ const UserTasks = ({
 
           return (
             <ListItem key={todo.id} role={undefined} dense>
+              {team && team.members && team.members.length > 1 && (
+                <AssignDialog
+                  user={user}
+                  todoId={todo.id}
+                  open={openAssignDialog}
+                  onAssign={handleAssignTask}
+                  members={team.members}
+                  onClose={() => setOpenAssignDialog(false)}
+                />
+              )}
               <ListItemIcon>
                 <Checkbox
                   onClick={onToggle(todo.id, 'completed', !todo.completed, true)}
@@ -190,7 +202,7 @@ const UserTasks = ({
                     <DeleteIcon color="error" />
                   </IconButton>
                 </Tooltip>
-                {team && team.members.length > 1 && (
+                {team && team.members && team.members.length > 1 && (
                   <Tooltip title="Assign To">
                     <IconButton
                       edge="end"
@@ -220,6 +232,7 @@ const UserTasks = ({
 };
 
 UserTasks.propTypes = {
+  user: PropTypes.object,
   team: PropTypes.array,
   loading: PropTypes.bool,
   addLoading: PropTypes.bool,
@@ -227,6 +240,7 @@ UserTasks.propTypes = {
   onAdd: PropTypes.func,
   onRemove: PropTypes.func,
   onToggle: PropTypes.func,
+  onAssign: PropTypes.func,
   onEdit: PropTypes.func,
   onUpdate: PropTypes.func,
 };

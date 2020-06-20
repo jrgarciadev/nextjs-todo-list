@@ -2,10 +2,12 @@
 import { useState } from 'react';
 import { map } from 'lodash';
 import PropTypes from 'prop-types';
+import { useSnackbar } from 'notistack';
 import UserTasks from '../../components/UserTasks';
 
 const TodoContainer = ({ items, onSetTodo, onAddTodo, firebase, team, user }) => {
   const [addLoading, setAddLoading] = useState(false);
+  const { enqueueSnackbar } = useSnackbar();
 
   const handleAddTodo = async (text) => {
     setAddLoading(true);
@@ -58,11 +60,28 @@ const TodoContainer = ({ items, onSetTodo, onAddTodo, firebase, team, user }) =>
     onSetTodo(tmpTodos);
   };
 
+  const handleAssignTodo = (id, userId) => {
+    let tmpTodos = map(items, (todo) => {
+      const tmpTodo = todo;
+      if (tmpTodo.id === id) {
+        tmpTodo.author = userId;
+        tmpTodo.assigning = true;
+        handleUpdateTodo(tmpTodo);
+        enqueueSnackbar('Task assigned succesfully', { variant: 'success' });
+      }
+      return tmpTodo;
+    });
+    tmpTodos = tmpTodos.filter((item) => item.id !== id);
+    onSetTodo(tmpTodos);
+  };
+
   return (
     <UserTasks
+      user={user}
       team={team}
       items={items}
       onAdd={handleAddTodo}
+      onAssign={handleAssignTodo}
       onEdit={handleEditTodo}
       onRemove={handleRemoveTodo}
       onToggle={handleToggle}
