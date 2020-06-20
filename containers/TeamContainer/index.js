@@ -1,12 +1,21 @@
 /* eslint-disable react/prop-types */
 import { memo, useState, useEffect, useContext } from 'react';
 import { first, isEmpty } from 'lodash';
-import { CircularProgress } from '@material-ui/core';
+import { makeStyles } from '@material-ui/core/styles';
 import { useSnackbar } from 'notistack';
+import Skeleton from '@material-ui/lab/Skeleton';
 import { EmptyTeam, UserTeam } from '../../components/UserTeam';
 import { withFirebase } from '../../hoc/withFirebase';
 import { withUser } from '../../hoc/withUser';
 import { AuthContext } from '../../contexts/auth';
+
+const useStyles = makeStyles(() => ({
+  skeleton: {
+    height: '40px',
+    marginTop: 10,
+    marginBottom: 10,
+  },
+}));
 
 const TeamContainer = memo(({ firebase, user }) => {
   const { updateUser } = useContext(AuthContext);
@@ -14,6 +23,7 @@ const TeamContainer = memo(({ firebase, user }) => {
   const [progress, setProgress] = useState(false);
   const [team, setTeam] = useState(null);
   const { enqueueSnackbar } = useSnackbar();
+  const classes = useStyles();
 
   const completeTeamMembersData = async (teamObj) => {
     const memberPromises = [];
@@ -138,20 +148,11 @@ const TeamContainer = memo(({ firebase, user }) => {
 
   if (loading)
     return (
-      <div className="container">
-        <h1>loading teams...&nbsp;</h1>
-        <CircularProgress size={44} />
-        <style jsx>
-          {`
-            .container {
-              display: flex;
-              width: 100%;
-              justify-content: center;
-              align-items: center;
-            }
-          `}
-        </style>
-      </div>
+      <>
+        <Skeleton className={classes.skeleton} />
+        <Skeleton className={classes.skeleton} />
+        <Skeleton className={classes.skeleton} />
+      </>
     );
 
   if (isEmpty(team)) {
