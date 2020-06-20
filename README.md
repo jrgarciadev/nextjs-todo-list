@@ -1,5 +1,7 @@
 ## [HolaMundo](https://www.youtube.com/watch?v=jaxjtywrG2A) TODO App Challenge
-
+## Demo
+[Open Demo](https://nextjs-todo-list.vercel.app
+)
 ## Features
 
 **Task Module**
@@ -17,8 +19,7 @@
 - User Team List 
 
 ## Technologies
-
-- [NextJS](https://nextjs.org) 
+- [NextJs](https://nextjs.org) 
 - [@material-ui](https://material-ui.com)
 - [Firebase](https://firebase.google.com)
 
