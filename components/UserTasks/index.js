@@ -113,12 +113,20 @@ const UserTasks = ({
     setOpenAssignDialog(false);
   };
 
+  const handleAddTodo = () => {
+    // Clear txt input
+    newTodo.onChange('');
+    // Send to firebase
+    onAdd(newTodo.value);
+  };
+
   return (
     <Card className={classes.root}>
       <List component="nav" aria-label="main add-todo field">
         <Input
           {...newTodo}
           className={classes.inputTodo}
+          onKeyPress={(event) => event.key === 'Enter' && handleAddTodo()}
           placeholder="Type here to add new task item.."
           inputProps={{ 'aria-label': 'description' }}
           endAdornment={
@@ -126,12 +134,7 @@ const UserTasks = ({
               <Tooltip title="Send Todo">
                 <IconButton
                   aria-label="Send Todo"
-                  onClick={() => {
-                    // Clear txt input
-                    newTodo.onChange('');
-                    // Send to firebase
-                    onAdd(newTodo.value);
-                  }}
+                  onClick={handleAddTodo}
                   disabled={newTodo.value.length < 2}
                 >
                   <div className={classes.sendWrapper}>
