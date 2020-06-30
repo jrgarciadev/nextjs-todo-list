@@ -80,10 +80,14 @@ const HomeContainer = ({ firebase, user }) => {
   }
 
   const handleAddTodo = (addTodo, text) => {
-    setUserTodos((oldTodos) => [
-      ...oldTodos,
-      { id: addTodo.id, text, completed: false, editable: false },
-    ]);
+    const newTodo = { id: addTodo.id, text, completed: false, editable: false };
+    // Add todo to the beginnning of array
+    userTodos.unshift(newTodo);
+    setUserTodos(userTodos);
+    // setUserTodos((oldTodos) => [
+    //   ...oldTodos,
+    //   { id: addTodo.id, text, completed: false, editable: false },
+    // ]);
   };
 
   // To fetch team data
@@ -130,7 +134,6 @@ const HomeContainer = ({ firebase, user }) => {
             handleAddTodo(rtTodo, rtTodo.text);
           }
         });
-        console.log({ myDataArray });
       }
     });
     return () => {
