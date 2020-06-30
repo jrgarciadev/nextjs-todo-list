@@ -32,7 +32,7 @@ const UserTeam = ({ team }) => {
   const clipboard = useClipboard();
 
   const handleCopyTeamCode = useCallback(() => {
-    clipboard.copy(team.code);
+    clipboard.copy(`${team.code}`);
     enqueueSnackbar('The team code has been copied');
   }, [clipboard.copy, team.code]);
 
