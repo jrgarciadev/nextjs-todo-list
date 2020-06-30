@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-curly-newline */
 import React from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
@@ -34,6 +35,9 @@ const JoinTeamDialog = ({ open, loading, onCreate, onClose }) => {
           </DialogContentText>
           <TextField
             {...teamName}
+            onKeyPress={(event) =>
+              event.key === 'Enter' && teamName.value.length >= 3 && onCreate(teamName.value)
+            }
             autoFocus
             disabled={loading}
             margin="dense"

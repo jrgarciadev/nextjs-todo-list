@@ -22,13 +22,13 @@ function a11yProps(index) {
 }
 
 const HomeContainer = ({ firebase, user }) => {
-  const [value, setValue] = useState(0);
+  const [currentTab, setCurrentTab] = useState(0);
   const [loading, setLoading] = useState(false);
   const [team, setTeam] = useState(null);
   const [userTodos, setUserTodos] = useState([]);
 
-  const handleChange = (event, newValue) => {
-    setValue(newValue);
+  const handleChangeTab = (event, newValue) => {
+    setCurrentTab(newValue);
   };
 
   const completeTeamMembersData = async (teamObj) => {
@@ -162,10 +162,10 @@ const HomeContainer = ({ firebase, user }) => {
     <Container maxWidth="md">
       <AppBar position="static" color="white">
         <Tabs
-          value={value}
+          value={currentTab}
           indicatorColor="primary"
           textColor="primary"
-          onChange={handleChange}
+          onChange={handleChangeTab}
           aria-label="tabs"
           centered
         >
@@ -173,7 +173,7 @@ const HomeContainer = ({ firebase, user }) => {
           <Tab label="My Team" icon={<PeopleIcon />} {...a11yProps(1)} />
         </Tabs>
       </AppBar>
-      <TabPanel value={value} index={0}>
+      <TabPanel value={currentTab} index={0}>
         <TodoContainer
           items={userTodos}
           firebase={firebase}
@@ -183,7 +183,7 @@ const HomeContainer = ({ firebase, user }) => {
           onAddTodo={handleAddTodo}
         />
       </TabPanel>
-      <TabPanel value={value} index={1}>
+      <TabPanel value={currentTab} index={1}>
         <TeamContainer
           firebase={firebase}
           team={team}
